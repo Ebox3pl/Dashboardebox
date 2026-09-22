@@ -96,13 +96,9 @@ def request_with_retries(session, method, url, **kwargs):
     raise RuntimeError(f"No se pudo completar {url} tras {MAX_RETRIES} intentos: {last_error}")
 
 
-def discover_business_warehouse_pairs(session):
-    """
-    Recorre GET /businesses (paginado) y arma la lista de negocios activos
-    junto con las bodegas fisicas (PHYSICAL_WAREHOUSE_IDS) que tienen
-    asignadas segun el propio objeto business.warehouses.
-    """
-    pairs = []
+def list_active_businesses(session):
+    """Recorre GET /businesses (paginado) y devuelve los negocios activos."""
+    businesses = []
     page = 1
     while True:
         data = request_with_retries(
@@ -110,6 +106,7 @@ def discover_business_warehouse_pairs(session):
             params={"page": page, "size": BUSINESS_PAGE_SIZE},
         )
         items = data.get("items", [])
+        print(f"  GET /businesses pagina {page}: {len(items)} items", file=sys.stderr)
         if not items:
             break
 
@@ -118,19 +115,8 @@ def discover_business_warehouse_pairs(session):
                 continue
             business_id = biz.get("id")
             business_name = biz.get("name") or business_id
-            if not business_id:
-                continue
-
-            seen_warehouses = set()
-            for w in biz.get("warehouses", []) or []:
-                wh_id = w.get("warehouse_id") or (w.get("warehouse") or {}).get("id")
-                if wh_id in PHYSICAL_WAREHOUSE_IDS and wh_id not in seen_warehouses:
-                    seen_warehouses.add(wh_id)
-                    pairs.append({
-                        "business_id": business_id,
-                        "business_name": business_name,
-                        "warehouse_id": wh_id,
-                    })
+            if business_id:
+                businesses.append({"business_id": business_id, "business_name": business_name})
 
         total_pages = data.get("total_pages")
         if total_pages and page >= total_pages:
@@ -138,6 +124,64 @@ def discover_business_warehouse_pairs(session):
         if len(items) < BUSINESS_PAGE_SIZE:
             break
         page += 1
+
+    return businesses
+
+
+def has_activity(session, business_id, warehouse_id, period_days):
+    """
+    Revisa rapido (1 pagina, 1 resultado) si el negocio tuvo alguna orden
+    entregada en esta bodega dentro del periodo. Se usa para detectar en que
+    bodega(s) opera cada negocio, ya que la asociacion negocio->bodega no
+    viene expuesta de forma confiable en GET /businesses para cuentas de
+    operador.
+    """
+    date_to = datetime.now(timezone.utc)
+    date_from = date_to - timedelta(days=period_days)
+    filters = [
+        ["warehouse_id", "=", warehouse_id],
+        ["and"],
+        ["order_status_id", "IN", DISPATCHED_STATUS_IDS],
+        ["and"],
+        ["created_at", ">=", date_from.strftime("%Y-%m-%dT00:00:00Z")],
+        ["and"],
+        ["created_at", "<=", date_to.strftime("%Y-%m-%dT23:59:59Z")],
+        ["and"],
+        ["business_id", "=", business_id],
+    ]
+    params = {
+        "page": 1,
+        "size": 1,
+        "filters": json.dumps(filters),
+        "skip_total": "true",
+    }
+    data = request_with_retries(session, "GET", f"{BASE_URL}/orders", params=params)
+    orders = data.get("items") or data.get("orders") or []
+    return len(orders) > 0
+
+
+def discover_business_warehouse_pairs(session, period_days):
+    """
+    Para cada negocio activo, revisa cada bodega fisica rastreada y arma el
+    par negocio+bodega solo si hubo actividad real (ordenes entregadas) en
+    el periodo. Un negocio nuevo aparece solo la primera semana que tenga
+    despachos registrados.
+    """
+    businesses = list_active_businesses(session)
+    print(f"Negocios activos encontrados: {len(businesses)}", file=sys.stderr)
+
+    pairs = []
+    for biz in businesses:
+        for wh_id in sorted(PHYSICAL_WAREHOUSE_IDS):
+            try:
+                if has_activity(session, biz["business_id"], wh_id, period_days):
+                    pairs.append({
+                        "business_id": biz["business_id"],
+                        "business_name": biz["business_name"],
+                        "warehouse_id": wh_id,
+                    })
+            except Exception as exc:
+                print(f"  aviso: no se pudo revisar {biz['business_name']} / bodega {wh_id}: {exc}", file=sys.stderr)
 
     return pairs
 
@@ -226,7 +270,7 @@ def main():
         print("Modo manual: procesando solo el negocio/bodega indicado.", file=sys.stderr)
     else:
         print("Descubriendo negocios activos y sus bodegas fisicas...", file=sys.stderr)
-        pairs = discover_business_warehouse_pairs(session)
+        pairs = discover_business_warehouse_pairs(session, args.period_days)
         print(f"Encontrados {len(pairs)} pares negocio+bodega.", file=sys.stderr)
 
     manifest = []
