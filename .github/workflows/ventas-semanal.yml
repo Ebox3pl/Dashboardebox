@@ -1,0 +1,44 @@
+name: Ventas Velocity semanal
+
+on:
+  schedule:
+    # Todos los jueves a las 07:00 UTC (~04:00 hora Chile en horario de invierno,
+    # 03:00 en horario de verano). Ajusta la hora si prefieres otro horario;
+    # https://crontab.guru ayuda a construir la expresion.
+    - cron: '0 7 * * 4'
+  workflow_dispatch: {}   # permite correrlo manualmente desde la pestaña Actions
+
+permissions:
+  contents: write   # necesario para que el workflow pueda commitear el resultado
+
+jobs:
+  ventas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Calcular ventas de los ultimos 30 dias (JustPets, bodega 344)
+        env:
+          VELOCITY_API_KEY: ${{ secrets.VELOCITY_API_KEY }}
+        run: |
+          python velocity_ventas_30d.py \
+            --business-id 670955107d7c5 \
+            --warehouse-id 344 \
+            --output data/ventas_30d_344.json
+
+      - name: Commitear resultado
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/ventas_30d_344.json
+          git diff --staged --quiet || git commit -m "Actualiza ventas 30 dias ($(date -u +%F))"
+          git push
