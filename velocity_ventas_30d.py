@@ -2,27 +2,30 @@
 """
 velocity_ventas_30d.py
 
-Calcula, para un negocio y bodega de Velocity, las unidades DESPACHADAS
-(entregadas) por SKU en los ultimos N dias. Este numero es el insumo pesado
-que no se puede calcular via el conector MCP en el chat (por volumen de
-ordenes), asi que este script corre aparte y deja el resultado en un JSON.
+Descubre automaticamente todos los negocios (sellers) activos de la cuenta
+de Velocity, identifica en que bodega(s) fisica(s) tiene stock cada uno, y
+calcula las unidades DESPACHADAS (entregadas) por SKU en los ultimos N dias
+para cada combinacion negocio+bodega encontrada.
+
+No hace falta editar este script ni el workflow cuando entra o sale un
+cliente: mientras el cliente este activo en Velocity y tenga inventario en
+alguna de las bodegas fisicas rastreadas (ver PHYSICAL_WAREHOUSE_IDS), el
+script lo procesa solo.
 
 USO
 ---
     export VELOCITY_API_KEY="tu-clave-aqui"
-    python3 velocity_ventas_30d.py --business-id 670955107d7c5 --warehouse-id 344
+    python3 velocity_ventas_30d.py --output-dir data
 
-Salida: ventas_30d_<warehouse_id>.json con la forma:
-    {
-      "warehouse_id": 344,
-      "business_id": "670955107d7c5",
-      "period_days": 30,
-      "generated_at": "2026-09-22T ...",
-      "units_sold": {
-        "<sku>": 123,
-        ...
-      }
-    }
+Salida (por cada negocio+bodega encontrado):
+    data/ventas_30d_<business_id>_<warehouse_id>.json
+Ademas escribe:
+    data/manifest.json  -- lista de todos los negocios+bodegas procesados,
+                            con nombre, business_id, warehouse_id y el path
+                            del archivo de ventas correspondiente. Sirve para
+                            que cualquier proceso downstream (como la pagina
+                            de controles) descubra los clientes sin tener que
+                            conocerlos de antemano.
 
 NOTA DE SEGURIDAD
 ------------------
@@ -31,12 +34,16 @@ Nunca la escribas en este archivo ni la subas a un repositorio.
 
 CRITERIO DE "VENDIDO"
 ----------------------
-Se cuentan solo ordenes en estado "Entregado" (order_status_id = 6). Es el
-estado mas limpio para medir demanda real: excluye canceladas, devueltas y
-ordenes aun en transito. Si prefieren contar unidades ya comprometidas
-(incluyendo "En Camino", "Asignado a Piloto", etc.) porque esas unidades ya
-salieron fisicamente de la bodega, agreguen sus IDs a DISPATCHED_STATUS_IDS
-mas abajo.
+Se cuentan solo ordenes en estado "Entregado" (order_status_id = 6). Ver
+DISPATCHED_STATUS_IDS mas abajo para ampliar el criterio si hace falta.
+
+BODEGAS FISICAS RASTREADAS
+----------------------------
+Solo las bodegas con layout de ubicaciones reales (has_layout=true en
+GET /warehouses) tienen sentido para un proceso de conteo fisico. Hoy son
+la 344 (ebox layout) y la 521 (Ebox lo Echevers). Si Ebox abre una bodega
+fisica nueva, agregar su id a PHYSICAL_WAREHOUSE_IDS mas abajo -- eso es
+lo unico que requiere editar este archivo; los clientes nuevos no.
 """
 
 import argparse
@@ -50,13 +57,18 @@ from datetime import datetime, timedelta, timezone
 import requests
 
 BASE_URL = "https://api.velocity-x.co"
-PAGE_SIZE = 200  # maximo permitido por la API
+PAGE_SIZE = 200  # maximo permitido por /orders
+BUSINESS_PAGE_SIZE = 100
 MAX_RETRIES = 3
 RETRY_BACKOFF_SECONDS = 2
 
 # Estados que cuentan como "vendido/despachado" para este calculo.
-# 6 = Entregado. Ver docstring arriba si quieren ampliar el criterio.
+# 6 = Entregado.
 DISPATCHED_STATUS_IDS = [6]
+
+# Unicas bodegas con layout de ubicaciones fisicas reales. Editar solo si
+# Ebox abre/cierra una bodega fisica -- nunca por un cliente nuevo.
+PHYSICAL_WAREHOUSE_IDS = {344, 521}
 
 
 def get_api_key() -> str:
@@ -69,58 +81,68 @@ def get_api_key() -> str:
     return key
 
 
-def fetch_orders_page(
-    session: requests.Session,
-    warehouse_id: int,
-    date_from: str,
-    date_to: str,
-    page: int,
-) -> dict:
-    """Trae una pagina de /orders filtrada por bodega, estado y rango de fechas."""
-    filters = [
-        ["warehouse_id", "=", warehouse_id],
-        ["and"],
-        ["order_status_id", "IN", DISPATCHED_STATUS_IDS],
-        ["and"],
-        ["created_at", ">=", date_from],
-        ["and"],
-        ["created_at", "<=", date_to],
-    ]
-    params = {
-        "page": page,
-        "size": PAGE_SIZE,
-        "filters": json.dumps(filters),
-        "skip_total": "true",  # mejora performance en listas grandes
-        "sort_by": "created_at",
-        "sort_dir": "ASC",
-    }
-
+def request_with_retries(session, method, url, **kwargs):
     last_error = None
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            resp = session.get(f"{BASE_URL}/orders", params=params, timeout=30)
+            resp = session.request(method, url, timeout=30, **kwargs)
             if resp.status_code == 200:
                 return resp.json()
             last_error = f"HTTP {resp.status_code}: {resp.text[:300]}"
         except requests.RequestException as exc:
             last_error = str(exc)
-
-        print(
-            f"  [pagina {page}] intento {attempt}/{MAX_RETRIES} fallo: {last_error}",
-            file=sys.stderr,
-        )
+        print(f"  intento {attempt}/{MAX_RETRIES} fallo ({url}): {last_error}", file=sys.stderr)
         time.sleep(RETRY_BACKOFF_SECONDS * attempt)
+    raise RuntimeError(f"No se pudo completar {url} tras {MAX_RETRIES} intentos: {last_error}")
 
-    raise RuntimeError(f"No se pudo traer la pagina {page} tras {MAX_RETRIES} intentos: {last_error}")
+
+def discover_business_warehouse_pairs(session):
+    """
+    Recorre GET /businesses (paginado) y arma la lista de negocios activos
+    junto con las bodegas fisicas (PHYSICAL_WAREHOUSE_IDS) que tienen
+    asignadas segun el propio objeto business.warehouses.
+    """
+    pairs = []
+    page = 1
+    while True:
+        data = request_with_retries(
+            session, "GET", f"{BASE_URL}/businesses",
+            params={"page": page, "size": BUSINESS_PAGE_SIZE},
+        )
+        items = data.get("items", [])
+        if not items:
+            break
+
+        for biz in items:
+            if biz.get("active") is False:
+                continue
+            business_id = biz.get("id")
+            business_name = biz.get("name") or business_id
+            if not business_id:
+                continue
+
+            seen_warehouses = set()
+            for w in biz.get("warehouses", []) or []:
+                wh_id = w.get("warehouse_id") or (w.get("warehouse") or {}).get("id")
+                if wh_id in PHYSICAL_WAREHOUSE_IDS and wh_id not in seen_warehouses:
+                    seen_warehouses.add(wh_id)
+                    pairs.append({
+                        "business_id": business_id,
+                        "business_name": business_name,
+                        "warehouse_id": wh_id,
+                    })
+
+        total_pages = data.get("total_pages")
+        if total_pages and page >= total_pages:
+            break
+        if len(items) < BUSINESS_PAGE_SIZE:
+            break
+        page += 1
+
+    return pairs
 
 
-def compute_units_sold(
-    api_key: str, business_id: str, warehouse_id: int, period_days: int
-) -> dict:
-    """Recorre todas las paginas de ordenes del periodo y suma unidades por SKU."""
-    session = requests.Session()
-    session.headers.update({"X-Velocity-Access-Token": api_key})
-
+def compute_units_sold(session, api_key, business_id, warehouse_id, period_days):
     date_to = datetime.now(timezone.utc)
     date_from = date_to - timedelta(days=period_days)
     date_from_str = date_from.strftime("%Y-%m-%dT00:00:00Z")
@@ -131,15 +153,29 @@ def compute_units_sold(
     page = 1
 
     while True:
-        data = fetch_orders_page(session, warehouse_id, date_from_str, date_to_str, page)
+        filters = [
+            ["warehouse_id", "=", warehouse_id],
+            ["and"],
+            ["order_status_id", "IN", DISPATCHED_STATUS_IDS],
+            ["and"],
+            ["created_at", ">=", date_from_str],
+            ["and"],
+            ["created_at", "<=", date_to_str],
+        ]
+        params = {
+            "page": page,
+            "size": PAGE_SIZE,
+            "filters": json.dumps(filters),
+            "skip_total": "true",
+            "sort_by": "created_at",
+            "sort_dir": "ASC",
+        }
+        data = request_with_retries(session, "GET", f"{BASE_URL}/orders", params=params)
         orders = data.get("items") or data.get("orders") or []
         if not orders:
             break
 
         for order in orders:
-            # Filtrar por negocio aca (por si el token es de un operador con
-            # varios negocios hijos y el filtro DSL no discrimina por business_id
-            # en /orders).
             if business_id and order.get("business_id") not in (None, business_id):
                 continue
             order_count += 1
@@ -149,17 +185,12 @@ def compute_units_sold(
                 if sku:
                     units_sold[sku] += qty
 
-        print(f"  pagina {page}: {len(orders)} ordenes (acumulado: {order_count})", file=sys.stderr)
-
         total_pages = data.get("total_pages")
         if total_pages and page >= total_pages:
             break
         if len(orders) < PAGE_SIZE:
             break
         page += 1
-
-    print(f"Total ordenes procesadas: {order_count}", file=sys.stderr)
-    print(f"Total SKUs con ventas: {len(units_sold)}", file=sys.stderr)
 
     return {
         "warehouse_id": warehouse_id,
@@ -175,30 +206,65 @@ def compute_units_sold(
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--business-id", required=True, help="business_id de Velocity (ej. 670955107d7c5)")
-    parser.add_argument("--warehouse-id", required=True, type=int, help="warehouse_id (ej. 344)")
+    parser.add_argument("--output-dir", default="data", help="Carpeta de salida (default: data)")
     parser.add_argument("--period-days", type=int, default=30, help="Ventana de dias hacia atras (default 30)")
-    parser.add_argument("--output", default=None, help="Path de salida (default: ventas_30d_<warehouse_id>.json)")
+    parser.add_argument(
+        "--business-id", default=None,
+        help="Opcional: si se pasa junto con --warehouse-id, procesa SOLO ese par en vez de descubrir todos.",
+    )
+    parser.add_argument("--warehouse-id", type=int, default=None, help="Ver --business-id.")
     args = parser.parse_args()
 
     api_key = get_api_key()
+    session = requests.Session()
+    session.headers.update({"X-Velocity-Access-Token": api_key})
 
-    print(
-        f"Calculando ventas de los ultimos {args.period_days} dias "
-        f"para business_id={args.business_id} warehouse_id={args.warehouse_id} ...",
-        file=sys.stderr,
-    )
+    os.makedirs(args.output_dir, exist_ok=True)
 
-    result = compute_units_sold(api_key, args.business_id, args.warehouse_id, args.period_days)
+    if args.business_id and args.warehouse_id:
+        pairs = [{"business_id": args.business_id, "business_name": args.business_id, "warehouse_id": args.warehouse_id}]
+        print("Modo manual: procesando solo el negocio/bodega indicado.", file=sys.stderr)
+    else:
+        print("Descubriendo negocios activos y sus bodegas fisicas...", file=sys.stderr)
+        pairs = discover_business_warehouse_pairs(session)
+        print(f"Encontrados {len(pairs)} pares negocio+bodega.", file=sys.stderr)
 
-    output_path = args.output or f"ventas_30d_{args.warehouse_id}.json"
-    output_dir = os.path.dirname(output_path)
-    if output_dir:
-        os.makedirs(output_dir, exist_ok=True)
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(result, f, ensure_ascii=False, indent=2)
+    manifest = []
+    for pair in pairs:
+        business_id = pair["business_id"]
+        business_name = pair["business_name"]
+        warehouse_id = pair["warehouse_id"]
+        print(f"-> {business_name} ({business_id}) / bodega {warehouse_id}", file=sys.stderr)
 
-    print(f"Listo. Resultado guardado en: {output_path}", file=sys.stderr)
+        try:
+            result = compute_units_sold(session, api_key, business_id, warehouse_id, args.period_days)
+        except Exception as exc:
+            print(f"   ERROR procesando {business_name}: {exc}", file=sys.stderr)
+            continue
+
+        result["business_name"] = business_name
+        filename = f"ventas_30d_{business_id}_{warehouse_id}.json"
+        output_path = os.path.join(args.output_dir, filename)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=2)
+
+        print(f"   {result['order_count']} ordenes, {len(result['units_sold'])} SKUs vendidos -> {filename}", file=sys.stderr)
+
+        manifest.append({
+            "business_id": business_id,
+            "business_name": business_name,
+            "warehouse_id": warehouse_id,
+            "file": filename,
+            "order_count": result["order_count"],
+            "sku_count": len(result["units_sold"]),
+            "generated_at": result["generated_at"],
+        })
+
+    manifest_path = os.path.join(args.output_dir, "manifest.json")
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump({"generated_at": datetime.now(timezone.utc).isoformat(), "clients": manifest}, f, ensure_ascii=False, indent=2)
+
+    print(f"\nListo. {len(manifest)} archivos generados. Manifest: {manifest_path}", file=sys.stderr)
 
 
 if __name__ == "__main__":
