@@ -1,4 +1,104 @@
 {
-  "generated_at": "2026-09-22T16:58:11.437066+00:00",
-  "clients": []
+  "generated_at": "2026-09-22T17:06:08.267670+00:00",
+  "clients": [
+    {
+      "business_id": "6659efb7373a9",
+      "business_name": "Motor Oil Chile Spa",
+      "warehouse_id": 521,
+      "file": "ventas_30d_6659efb7373a9_521.json",
+      "order_count": 22,
+      "sku_count": 5,
+      "generated_at": "2026-09-22T17:04:32.784681+00:00"
+    },
+    {
+      "business_id": "670955107d7c5",
+      "business_name": "JUST PETS",
+      "warehouse_id": 344,
+      "file": "ventas_30d_670955107d7c5_344.json",
+      "order_count": 10067,
+      "sku_count": 380,
+      "generated_at": "2026-09-22T17:04:54.272761+00:00"
+    },
+    {
+      "business_id": "678e9f3ff0dee",
+      "business_name": "Mercadazo",
+      "warehouse_id": 521,
+      "file": "ventas_30d_678e9f3ff0dee_521.json",
+      "order_count": 1490,
+      "sku_count": 130,
+      "generated_at": "2026-09-22T17:05:00.909098+00:00"
+    },
+    {
+      "business_id": "6918ad1d5b08e",
+      "business_name": "Cada cosa en su lugar",
+      "warehouse_id": 521,
+      "file": "ventas_30d_6918ad1d5b08e_521.json",
+      "order_count": 119,
+      "sku_count": 163,
+      "generated_at": "2026-09-22T17:05:08.304906+00:00"
+    },
+    {
+      "business_id": "6944403445572",
+      "business_name": "brownbee",
+      "warehouse_id": 344,
+      "file": "ventas_30d_6944403445572_344.json",
+      "order_count": 99,
+      "sku_count": 15,
+      "generated_at": "2026-09-22T17:05:29.288012+00:00"
+    },
+    {
+      "business_id": "69fcf1281fac3",
+      "business_name": "SINTOYO",
+      "warehouse_id": 521,
+      "file": "ventas_30d_69fcf1281fac3_521.json",
+      "order_count": 61,
+      "sku_count": 10,
+      "generated_at": "2026-09-22T17:05:36.088342+00:00"
+    },
+    {
+      "business_id": "6a3aea7962fba",
+      "business_name": "Innovative Spa",
+      "warehouse_id": 521,
+      "file": "ventas_30d_6a3aea7962fba_521.json",
+      "order_count": 1968,
+      "sku_count": 531,
+      "generated_at": "2026-09-22T17:05:42.730716+00:00"
+    },
+    {
+      "business_id": "6a567a651f92b",
+      "business_name": "The Healthy Supplement SpA",
+      "warehouse_id": 521,
+      "file": "ventas_30d_6a567a651f92b_521.json",
+      "order_count": 11,
+      "sku_count": 7,
+      "generated_at": "2026-09-22T17:05:48.989724+00:00"
+    },
+    {
+      "business_id": "6a7e249ca7b4b",
+      "business_name": "EXITOYS SPA",
+      "warehouse_id": 521,
+      "file": "ventas_30d_6a7e249ca7b4b_521.json",
+      "order_count": 36,
+      "sku_count": 25,
+      "generated_at": "2026-09-22T17:05:55.202405+00:00"
+    },
+    {
+      "business_id": "6a7f6800dc2f3",
+      "business_name": "WINGA SPA",
+      "warehouse_id": 521,
+      "file": "ventas_30d_6a7f6800dc2f3_521.json",
+      "order_count": 225,
+      "sku_count": 50,
+      "generated_at": "2026-09-22T17:06:01.480822+00:00"
+    },
+    {
+      "business_id": "6aa01e3523e48",
+      "business_name": "Valent Group Chile SPA",
+      "warehouse_id": 521,
+      "file": "ventas_30d_6aa01e3523e48_521.json",
+      "order_count": 1,
+      "sku_count": 1,
+      "generated_at": "2026-09-22T17:06:08.266868+00:00"
+    }
+  ]
 }

@@ -1,0 +1,13 @@
+{
+  "warehouse_id": 521,
+  "business_id": "6aa01e3523e48",
+  "period_days": 30,
+  "date_from": "2026-08-23T00:00:00Z",
+  "date_to": "2026-09-22T23:59:59Z",
+  "generated_at": "2026-09-22T17:06:08.266868+00:00",
+  "order_count": 1,
+  "units_sold": {
+    "7453132324606NEG-44": 1
+  },
+  "business_name": "Valent Group Chile SPA"
+}
