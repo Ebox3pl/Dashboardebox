@@ -26,19 +26,16 @@ jobs:
       - name: Instalar dependencias
         run: pip install requests
 
-      - name: Calcular ventas de los ultimos 30 dias (JustPets, bodega 344)
+      - name: Descubrir clientes y calcular ventas de los ultimos 30 dias
         env:
           VELOCITY_API_KEY: ${{ secrets.VELOCITY_API_KEY }}
         run: |
-          python velocity_ventas_30d.py \
-            --business-id 670955107d7c5 \
-            --warehouse-id 344 \
-            --output data/ventas_30d_344.json
+          python velocity_ventas_30d.py --output-dir data
 
-      - name: Commitear resultado
+      - name: Commitear resultados
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/ventas_30d_344.json
-          git diff --staged --quiet || git commit -m "Actualiza ventas 30 dias ($(date -u +%F))"
+          git add data/*.json
+          git diff --staged --quiet || git commit -m "Actualiza ventas 30 dias, todos los clientes ($(date -u +%F))"
           git push
