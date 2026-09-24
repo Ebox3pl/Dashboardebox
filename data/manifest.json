@@ -1,95 +1,95 @@
 {
-  "generated_at": "2026-09-22T17:06:08.267670+00:00",
+  "generated_at": "2026-09-24T07:19:52.457308+00:00",
   "clients": [
     {
       "business_id": "6659efb7373a9",
       "business_name": "Motor Oil Chile Spa",
       "warehouse_id": 521,
       "file": "ventas_30d_6659efb7373a9_521.json",
-      "order_count": 22,
+      "order_count": 23,
       "sku_count": 5,
-      "generated_at": "2026-09-22T17:04:32.784681+00:00"
+      "generated_at": "2026-09-24T07:18:07.800993+00:00"
     },
     {
       "business_id": "670955107d7c5",
       "business_name": "JUST PETS",
       "warehouse_id": 344,
       "file": "ventas_30d_670955107d7c5_344.json",
-      "order_count": 10067,
-      "sku_count": 380,
-      "generated_at": "2026-09-22T17:04:54.272761+00:00"
+      "order_count": 10270,
+      "sku_count": 379,
+      "generated_at": "2026-09-24T07:18:26.534993+00:00"
     },
     {
       "business_id": "678e9f3ff0dee",
       "business_name": "Mercadazo",
       "warehouse_id": 521,
       "file": "ventas_30d_678e9f3ff0dee_521.json",
-      "order_count": 1490,
-      "sku_count": 130,
-      "generated_at": "2026-09-22T17:05:00.909098+00:00"
+      "order_count": 2780,
+      "sku_count": 146,
+      "generated_at": "2026-09-24T07:18:34.956817+00:00"
     },
     {
       "business_id": "6918ad1d5b08e",
       "business_name": "Cada cosa en su lugar",
       "warehouse_id": 521,
       "file": "ventas_30d_6918ad1d5b08e_521.json",
-      "order_count": 119,
-      "sku_count": 163,
-      "generated_at": "2026-09-22T17:05:08.304906+00:00"
+      "order_count": 141,
+      "sku_count": 176,
+      "generated_at": "2026-09-24T07:18:43.310996+00:00"
     },
     {
       "business_id": "6944403445572",
       "business_name": "brownbee",
       "warehouse_id": 344,
       "file": "ventas_30d_6944403445572_344.json",
-      "order_count": 99,
-      "sku_count": 15,
-      "generated_at": "2026-09-22T17:05:29.288012+00:00"
+      "order_count": 101,
+      "sku_count": 14,
+      "generated_at": "2026-09-24T07:19:02.027132+00:00"
     },
     {
       "business_id": "69fcf1281fac3",
       "business_name": "SINTOYO",
       "warehouse_id": 521,
       "file": "ventas_30d_69fcf1281fac3_521.json",
-      "order_count": 61,
+      "order_count": 58,
       "sku_count": 10,
-      "generated_at": "2026-09-22T17:05:36.088342+00:00"
+      "generated_at": "2026-09-24T07:19:10.399454+00:00"
     },
     {
       "business_id": "6a3aea7962fba",
       "business_name": "Innovative Spa",
       "warehouse_id": 521,
       "file": "ventas_30d_6a3aea7962fba_521.json",
-      "order_count": 1968,
-      "sku_count": 531,
-      "generated_at": "2026-09-22T17:05:42.730716+00:00"
+      "order_count": 2250,
+      "sku_count": 561,
+      "generated_at": "2026-09-24T07:19:18.795243+00:00"
     },
     {
       "business_id": "6a567a651f92b",
       "business_name": "The Healthy Supplement SpA",
       "warehouse_id": 521,
       "file": "ventas_30d_6a567a651f92b_521.json",
-      "order_count": 11,
+      "order_count": 10,
       "sku_count": 7,
-      "generated_at": "2026-09-22T17:05:48.989724+00:00"
+      "generated_at": "2026-09-24T07:19:27.192947+00:00"
     },
     {
       "business_id": "6a7e249ca7b4b",
       "business_name": "EXITOYS SPA",
       "warehouse_id": 521,
       "file": "ventas_30d_6a7e249ca7b4b_521.json",
-      "order_count": 36,
-      "sku_count": 25,
-      "generated_at": "2026-09-22T17:05:55.202405+00:00"
+      "order_count": 43,
+      "sku_count": 29,
+      "generated_at": "2026-09-24T07:19:35.590179+00:00"
     },
     {
       "business_id": "6a7f6800dc2f3",
       "business_name": "WINGA SPA",
       "warehouse_id": 521,
       "file": "ventas_30d_6a7f6800dc2f3_521.json",
-      "order_count": 225,
-      "sku_count": 50,
-      "generated_at": "2026-09-22T17:06:01.480822+00:00"
+      "order_count": 252,
+      "sku_count": 51,
+      "generated_at": "2026-09-24T07:19:43.956087+00:00"
     },
     {
       "business_id": "6aa01e3523e48",
@@ -98,7 +98,7 @@
       "file": "ventas_30d_6aa01e3523e48_521.json",
       "order_count": 1,
       "sku_count": 1,
-      "generated_at": "2026-09-22T17:06:08.266868+00:00"
+      "generated_at": "2026-09-24T07:19:52.456562+00:00"
     }
   ]
 }
