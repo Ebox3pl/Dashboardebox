@@ -2,9 +2,9 @@
   "warehouse_id": 521,
   "business_id": "6aa01e3523e48",
   "period_days": 30,
-  "date_from": "2026-09-01T00:00:00Z",
-  "date_to": "2026-10-01T23:59:59Z",
-  "generated_at": "2026-10-01T07:23:09.647937+00:00",
+  "date_from": "2026-09-08T00:00:00Z",
+  "date_to": "2026-10-08T23:59:59Z",
+  "generated_at": "2026-10-08T07:23:24.298423+00:00",
   "order_count": 1,
   "units_sold": {
     "7453132324606NEG-44": 1

@@ -1,104 +1,104 @@
 {
-  "generated_at": "2026-10-01T07:23:09.648783+00:00",
+  "generated_at": "2026-10-08T07:23:24.299055+00:00",
   "clients": [
     {
       "business_id": "6659efb7373a9",
       "business_name": "Motor Oil Chile Spa",
       "warehouse_id": 521,
       "file": "ventas_30d_6659efb7373a9_521.json",
-      "order_count": 23,
-      "sku_count": 8,
-      "generated_at": "2026-10-01T07:20:34.449673+00:00"
+      "order_count": 25,
+      "sku_count": 7,
+      "generated_at": "2026-10-08T07:20:48.280566+00:00"
     },
     {
       "business_id": "670955107d7c5",
       "business_name": "JUST PETS",
       "warehouse_id": 344,
       "file": "ventas_30d_670955107d7c5_344.json",
-      "order_count": 9914,
+      "order_count": 10300,
       "sku_count": 376,
-      "generated_at": "2026-10-01T07:20:54.542502+00:00"
+      "generated_at": "2026-10-08T07:21:07.369576+00:00"
     },
     {
       "business_id": "678e9f3ff0dee",
       "business_name": "Mercadazo",
       "warehouse_id": 521,
       "file": "ventas_30d_678e9f3ff0dee_521.json",
-      "order_count": 2302,
-      "sku_count": 132,
-      "generated_at": "2026-10-01T07:21:05.294803+00:00"
+      "order_count": 2755,
+      "sku_count": 134,
+      "generated_at": "2026-10-08T07:21:19.719540+00:00"
     },
     {
       "business_id": "6873359178afa",
       "business_name": "TITOY ",
       "warehouse_id": 344,
       "file": "ventas_30d_6873359178afa_344.json",
-      "order_count": 9,
+      "order_count": 7,
       "sku_count": 7,
-      "generated_at": "2026-10-01T07:21:26.905568+00:00"
+      "generated_at": "2026-10-08T07:21:38.628256+00:00"
     },
     {
       "business_id": "6918ad1d5b08e",
       "business_name": "Cada cosa en su lugar",
       "warehouse_id": 521,
       "file": "ventas_30d_6918ad1d5b08e_521.json",
-      "order_count": 211,
-      "sku_count": 208,
-      "generated_at": "2026-10-01T07:21:38.544329+00:00"
+      "order_count": 295,
+      "sku_count": 225,
+      "generated_at": "2026-10-08T07:21:51.015942+00:00"
     },
     {
       "business_id": "6944403445572",
       "business_name": "brownbee",
       "warehouse_id": 344,
       "file": "ventas_30d_6944403445572_344.json",
-      "order_count": 116,
+      "order_count": 120,
       "sku_count": 12,
-      "generated_at": "2026-10-01T07:22:00.090375+00:00"
+      "generated_at": "2026-10-08T07:22:09.946410+00:00"
     },
     {
       "business_id": "69fcf1281fac3",
       "business_name": "SINTOYO",
       "warehouse_id": 521,
       "file": "ventas_30d_69fcf1281fac3_521.json",
-      "order_count": 65,
-      "sku_count": 10,
-      "generated_at": "2026-10-01T07:22:11.764628+00:00"
+      "order_count": 67,
+      "sku_count": 11,
+      "generated_at": "2026-10-08T07:22:22.380943+00:00"
     },
     {
       "business_id": "6a3aea7962fba",
       "business_name": "Innovative Spa",
       "warehouse_id": 521,
       "file": "ventas_30d_6a3aea7962fba_521.json",
-      "order_count": 2902,
+      "order_count": 3638,
       "sku_count": 615,
-      "generated_at": "2026-10-01T07:22:23.330908+00:00"
+      "generated_at": "2026-10-08T07:22:34.774380+00:00"
     },
     {
       "business_id": "6a567a651f92b",
       "business_name": "The Healthy Supplement SpA",
       "warehouse_id": 521,
       "file": "ventas_30d_6a567a651f92b_521.json",
-      "order_count": 13,
-      "sku_count": 7,
-      "generated_at": "2026-10-01T07:22:34.905814+00:00"
+      "order_count": 10,
+      "sku_count": 6,
+      "generated_at": "2026-10-08T07:22:47.207303+00:00"
     },
     {
       "business_id": "6a7e249ca7b4b",
       "business_name": "EXITOYS SPA",
       "warehouse_id": 521,
       "file": "ventas_30d_6a7e249ca7b4b_521.json",
-      "order_count": 50,
-      "sku_count": 29,
-      "generated_at": "2026-10-01T07:22:46.480153+00:00"
+      "order_count": 67,
+      "sku_count": 36,
+      "generated_at": "2026-10-08T07:22:59.532606+00:00"
     },
     {
       "business_id": "6a7f6800dc2f3",
       "business_name": "WINGA SPA",
       "warehouse_id": 521,
       "file": "ventas_30d_6a7f6800dc2f3_521.json",
-      "order_count": 323,
-      "sku_count": 51,
-      "generated_at": "2026-10-01T07:22:58.028059+00:00"
+      "order_count": 392,
+      "sku_count": 49,
+      "generated_at": "2026-10-08T07:23:11.967599+00:00"
     },
     {
       "business_id": "6aa01e3523e48",
@@ -107,7 +107,7 @@
       "file": "ventas_30d_6aa01e3523e48_521.json",
       "order_count": 1,
       "sku_count": 1,
-      "generated_at": "2026-10-01T07:23:09.647937+00:00"
+      "generated_at": "2026-10-08T07:23:24.298423+00:00"
     }
   ]
 }
