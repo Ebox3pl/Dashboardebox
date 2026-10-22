@@ -1,0 +1,14 @@
+{
+  "warehouse_id": 521,
+  "business_id": "6a3d69b2bc103",
+  "period_days": 30,
+  "date_from": "2026-09-22T00:00:00Z",
+  "date_to": "2026-10-22T23:59:59Z",
+  "generated_at": "2026-10-22T07:45:51.376574+00:00",
+  "order_count": 1,
+  "units_sold": {
+    "0658325407631": 13,
+    "0799192593536": 9
+  },
+  "business_name": "Sangria Victoria"
+}
