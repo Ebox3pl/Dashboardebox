@@ -1,0 +1,13 @@
+{
+  "warehouse_id": 521,
+  "business_id": "6ae0b05b289ba",
+  "period_days": 30,
+  "date_from": "2026-10-06T00:00:00Z",
+  "date_to": "2026-11-05T23:59:59Z",
+  "generated_at": "2026-11-05T15:24:40.401162+00:00",
+  "order_count": 1,
+  "units_sold": {
+    "MLC4507112484": 1
+  },
+  "business_name": "Martinez  Vallenar,"
+}
